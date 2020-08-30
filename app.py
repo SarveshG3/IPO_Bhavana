@@ -1,13 +1,14 @@
-# from datetime import time
 # from flask_restful import Resource, Api
 # from flask_httpauth import HTTPBasicAuth
-# import win32security
 from flask import Flask
 import speech_recognition as sr
+import time
 
 
-def recognize_speech_from_mic(recognizer, microphone):
+def recognize_speech_from_mic():
 
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
     if not isinstance(recognizer, sr.Recognizer):
         raise TypeError("`recognizer` must be `Recognizer` instance")
 
@@ -25,15 +26,17 @@ def recognize_speech_from_mic(recognizer, microphone):
     }
 
     try:
-        response["transcription"] = recognizer.recognize(audio)
+        print('Converting...')
+        trans = recognizer.recognize(audio)
+        print('Transcript: ' + trans)
+        response["transcription"] = trans
 
     except:
         # API was unreachable or unresponsive
         response["success"] = False
         response["error"] = "API unavailable"
         # speech was unintelligible
-        response["error"] = "Unable to recognize speech"
-        print()
+        response["transcription"] = "Unable to recognize speech"
 
     return response
 
@@ -52,11 +55,9 @@ def hello():
 
 @app.route('/transcript/', methods=['GET', 'POST'])
 def transcript():
-    recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
+    time.sleep(2.0)
     print("Say something: ")
-    #time.sleep(5000)
-    guess = recognize_speech_from_mic(recognizer, microphone)
+    guess = recognize_speech_from_mic()
     return guess["transcription"]
 
 # @auth.verify_password
